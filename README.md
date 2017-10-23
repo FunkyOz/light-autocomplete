@@ -45,7 +45,7 @@ var options: {
 $('#light-autocomplete').lightAutocomplete(options);
 ```
 ### Detect enter press.
-You're even the possibility to detect the press of enter key.
+You have the possibility to take the pressure of enter key.
 ```javascript
 var options: {
   ...
@@ -58,11 +58,11 @@ var options: {
 $('#light-autocomplete').lightAutocomplete(options);
 ```
 ### Detect click out of element.
-When the user click out of the list you have the possibility to controll him.
+When the user clicks out of the list you have the possibility to controll the event.
 ```javascript
 var options: {
   ...
-  onPressEnterKey: function(item) {
+  onClickOut: function(item) {
     $('#light-autocomplete').val(item.label);
   }
   ...
@@ -71,7 +71,7 @@ var options: {
 $('#light-autocomplete').lightAutocomplete(options);
 ```
 ## Set Data From Ajax Request.
-Variable `search` is the string that you're searching. It will be updated every time you search a letter.
+Variable `search` is the string to find in array. It will be updated every time you press a character.
 ```javascript
 var options: {
   sourceData: function(success, search) {
