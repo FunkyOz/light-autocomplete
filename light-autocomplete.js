@@ -18,9 +18,11 @@ var LightAutocomplete = (function (main) {
 			maxSize: 6,
 			onClick: function(item) {
 				setItem(item);
+				triggerClickWindow(item);
 			},
 			onPressEnterKey: function(item) {
 				setItem(item);
+				triggerClickWindow(item);
 				if(listExists()){
 					adjustTempleteItem();
 				}
@@ -47,7 +49,6 @@ var LightAutocomplete = (function (main) {
 						var index = parseInt($(selectorContainer + '.selected').attr('item')) - 1;
 						var item = dataArr[index];
 						defaults.onPressEnterKey(item);
-						$(window).trigger('click');
 						return false;
 					break;
 				}
@@ -56,9 +57,14 @@ var LightAutocomplete = (function (main) {
 			setKeyDown();
 			setKeyUp();
 			insertTemplate();
-			setClickOut();
+			setWindowClick();
 			setAutocompleteBrowserOff();
 			setSelectedItem();
+		}
+		function triggerClickWindow(item) {
+			if(item !== undefined && item !== null) {
+				$(window).trigger('click');
+			}
 		}
 		function createIdInput() {
 			if(typeof($input.attr('id')) !== 'undefined' && $input.attr('id') !== null) {
@@ -163,14 +169,14 @@ var LightAutocomplete = (function (main) {
 			if(listExists()) {
 				adjustTempleteItem();
 			}
-			dataArr = data;
-			dataArr.forEach(function(element, i) {
+			data.forEach(function(element, i) {
 				if(defaults.maxSize !== false) {
 					if(index >= defaults.maxSize){
 						return false;
 					}
 				}
 				if(element.label.toLowerCase().indexOf(search) > -1) {
+					dataArr.push(element);
 					index++;
 					last = index;
 					$(selectorList, $input.parent()).append(createTempleteItem(element, index));
@@ -189,14 +195,14 @@ var LightAutocomplete = (function (main) {
 				$input.val(element.label);
 			}
 		}
-		function setClickOut(){
-			$(window).on('click',function() {
-				if(dataArr.length > 0) {
-					defaults.onClickOut(dataArr[0]);
-				}
+		function setClickOut(item){
+			defaults.onClickOut(dataArr[0]);
+		}
+		function setWindowClick() {
+			$(window).on('click', function() {
 				$(selectorList).parent().hide();
 			});
-			$(selectorList).parent().on('click',function(event){
+			$(selectorList).parent().on('click', function(event){
 				event.stopPropagation();
 			});
 		}
@@ -204,13 +210,12 @@ var LightAutocomplete = (function (main) {
 		*	Set the click event and use the default function.
 		*	
 		*/
-		function setClick($element, item) {
+		function setClick($element) {
 			bindOffClick($element);
 			var index = parseInt($element.attr('item')) - 1;
-			item = dataArr[index];
+			var item = dataArr[index];
 			$element.on('click', function() {
 				defaults.onClick(item);
-				$(window).trigger('click');
 			});
 		}
 		/*
@@ -246,7 +251,7 @@ var LightAutocomplete = (function (main) {
 		function createTempleteItem(item, index) {
 			var seleceted = '';
 			if(index == 1) seleceted = ' selected';
-			return  '<li><div item="' + index + '" class="' + classElement + ' ' + seleceted + '" style="max-height: ' + defaults.heightOfElement + 'px;">' + item.label + '</div></li>';
+			return  '<li><div item="' + index + '" class="' + classItem + ' ' + seleceted + '" style="max-height: ' + defaults.heightOfElement + 'px;">' + item.label + '</div></li>';
 		}
 		/*
 		*	Set off autocomplete of the browser.
