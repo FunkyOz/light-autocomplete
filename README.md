@@ -124,3 +124,7 @@ var options: {
 
 $('#light-autocomplete').lightAutocomplete(options);
 ```
+## People.
+Copyright (c) 2017 Author [Lorenzo Dessimoni](https://www.linkedin.com/in/lorenzo-dessimoni-092894ab/)
+## License.
+[MIT](https://github.com/FunkyOz/light-autocomplete/blob/master/LICENSE)
