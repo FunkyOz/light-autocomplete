@@ -1,9 +1,10 @@
 var LightAutocomplete = (function (main) {
 	main = function Core($input, options) {
 		var classList = 'light-autocomplete-list',
-		classItem = 'light-autocomplete-element',
+		classElement = 'light-autocomplete-element',
+		classContainer = 'light-autocomplete-container',
 		selectorList = '.light-autocomplete-list ul',
-		selectorContainer = '.light-autocomplete-element',
+		selectorElement = '.' + classElement,
 		idInput = '',
 		search = '',
 		last = 0,
@@ -18,55 +19,43 @@ var LightAutocomplete = (function (main) {
 			maxSize: 6,
 			onClick: function(item) {
 				setItem(item);
-				triggerClickWindow(item);
 			},
 			onPressEnterKey: function(item) {
 				setItem(item);
-				triggerClickWindow(item);
-				if(listExists()){
-					adjustTempleteItem();
-				}
 			},
 			onClickOut: function(item) {
 				setItem(item);
-			}
+			},
+			onFocusOut: function(item) {
+				setItem(item);
+			},
 		};
+		var keys = {
+			ENTER: 13,
+			LEFT: 37,
+			UP: 38,
+			RIGHT: 39,
+			DOWN: 40,
+			TAB: 9,
+			ESC: 27
+		}
 		defaults = mergeDefaultOptions(defaults, options);
 		if(defaults.devMode) {
 			getErrorsInDevMode();
 		}
 		init();
 		function init() {
-			createIdInput();
-			$input.keypress(function(e) {
-				switch(e.which) {
-					/* Enter */
-					case 13:
-						e.preventDefault();
-						if(search.length < defaults.minChar) {
-							dataArr = [];
-						}
-						var index = parseInt($(selectorContainer + '.selected').attr('item')) - 1;
-						var item = dataArr[index];
-						defaults.onPressEnterKey(item);
-						return false;
-					break;
-				}
-			});
 			defaults.maxHeight = defaults.heightOfElement * defaults.visibleElementInList;
+			createInputID();
+			setAutocompleteBrowserOff();
+			createContainer();
+			insertTemplate();
 			setKeyDown();
 			setKeyUp();
-			insertTemplate();
-			setWindowClick();
-			setAutocompleteBrowserOff();
-			setSelectedItem();
+			setPressEnterKey();
+			setFocusOut();
 		}
-		function triggerClickWindow(item) {
-			if(item !== undefined && item !== null) {
-				$(window).trigger('click');
-			}
-		}
-		function createIdInput() {
+		function createInputID() {
 			if(typeof($input.attr('id')) !== 'undefined' && $input.attr('id') !== null) {
 				idInput = '#' + $input.attr('id');
 			} else {
@@ -81,26 +70,39 @@ var LightAutocomplete = (function (main) {
 			});
 			return obj;
 		}
-		function setSelectedItem() {
-			$(document).on('mouseover', selectorContainer, function(e) {
+		function setElementMouseover() {
+			var $element = $(selectorElement);
+			bindOffMouseover($element);
+			$element.on('mouseover', function(e) {
 				e.preventDefault();
-				$(selectorContainer).removeClass('selected');
+				$(selectorElement).removeClass('selected');
 				$(this).addClass('selected');
 				return false;
 			});
 		}
+		
 		function setKeyDown() {
 			bindOffKeyDown();
 			$input.on('keydown', function(e) {
-				if(e.keyCode == 38 || e.keyCode == 40) {
+				if(e.keyCode == keys.UP || e.keyCode == keys.DOWN) {
 					e.preventDefault();
+					return false;
+				}
+				switch(e.keyCode) {
+					case keys.ESC:
+						e.preventDefault();
+					case keys.TAB:
+						var item = dataArr[0];
+						defaults.onFocusOut(item);
+						resetDropDown();
+					break;
 				}
 			});
 		}
 		function setKeyUp(){
 			bindOffKeyup();
 			$input.on('keyup', function(e) {
-				if(detectKeysPress(e)){
+				if(isMoveArrow(e)){
 					return false;
 				}
 				adjustTempleteItem();
@@ -112,26 +114,24 @@ var LightAutocomplete = (function (main) {
 				}
 			});
 		}
-		function detectKeysPress(e) {
+		function isMoveArrow(e) {
 			switch(e.keyCode) {
-				/* Enter */
-				case 13:
-				/* Left */
-				case 37:
-				/* Right */
-				case 39:
+				case keys.ESC:
+				case keys.TAB:
+				case keys.ENTER:
+				case keys.LEFT:
+				case keys.RIGHT:
 					e.preventDefault();
 					return true;
 				break;
-				/* Up */
-				case 38:
+				case keys.UP:
 					e.preventDefault();
-					var item = parseInt($(selectorContainer + '.selected').attr('item'));
-					$(selectorContainer).removeClass('selected');
+					var item = parseInt($(selectorElement + '.selected').attr('item'));
+					$(selectorElement).removeClass('selected');
 					if(item > 1) {
-						$(selectorContainer + '[item="' + (item - 1) + '"]').addClass('selected');
+						$(selectorElement + '[item="' + (item - 1) + '"]').addClass('selected');
 					} else {
-						$(selectorContainer + '[item="' + 1 + '"]').addClass('selected');
+						$(selectorElement + '[item="' + 1 + '"]').addClass('selected');
 					}
 					if(item == firstItem && item != 1) {
 						$(selectorList).animate({
@@ -141,15 +141,14 @@ var LightAutocomplete = (function (main) {
 					}
 					return true;
 				break;
-				/* Down */
-				case 40:
+				case keys.DOWN:
 					e.preventDefault();
-					var item = parseInt($(selectorContainer + '.selected').attr('item'));
-					$(selectorContainer).removeClass('selected');
+					var item = parseInt($(selectorElement + '.selected').attr('item'));
+					$(selectorElement).removeClass('selected');
 					if(item < last) {
-						$(selectorContainer + '[item="' + (item + 1) + '"]').addClass('selected');
+						$(selectorElement + '[item="' + (item + 1) + '"]').addClass('selected');
 					} else {
-						$(selectorContainer + '[item="' + last + '"]').addClass('selected');
+						$(selectorElement + '[item="' + last + '"]').addClass('selected');
 					}
 					if(item == (firstItem + defaults.visibleElementInList - 1) && item != last) {
 						$(selectorList).animate({
@@ -166,9 +165,6 @@ var LightAutocomplete = (function (main) {
 		}
 		function createDropDown(data) {
 			var index = 0;
-			if(listExists()) {
-				adjustTempleteItem();
-			}
 			data.forEach(function(element, i) {
 				if(defaults.maxSize !== false) {
 					if(index >= defaults.maxSize){
@@ -176,46 +172,61 @@ var LightAutocomplete = (function (main) {
 					}
 				}
 				if(element.label.toLowerCase().indexOf(search) > -1) {
-					dataArr.push(element);
-					index++;
-					last = index;
+					dataArr[index] = element;
+					last = ++index;
 					$(selectorList, $input.parent()).append(createTempleteItem(element, index));
-					setClick(getItem(index));
 				}
 			});
+			setClick();
+			setElementMouseover();
 		}
-		function listExists() {
-			if($(selectorList + ' li').length > 0) {
-				return true;
-			}
-			return false;
-		}
-		function setItem(element) {
-			if (typeof element !== 'undefined') {
-				$input.val(element.label);
+		function setItem(item) {
+			if (typeof item !== 'undefined') {
+				$input.val(item.label);
 			}
 		}
-		function setClickOut(item){
-			defaults.onClickOut(dataArr[0]);
-		}
-		function setWindowClick() {
-			$(window).on('click', function() {
-				$(selectorList).parent().hide();
+		function setFocusOut() {
+			bindOffFocusOut();
+			$input.parent().on('focusout', function(e) {
+				e.preventDefault();
+				if(search.length < defaults.minChar) {
+					return false;
+				}
+				var item = dataArr[0];
+				defaults.onFocusOut(item);
+				// resetDropDown();
 			});
-			$(selectorList).parent().on('click', function(event){
-				event.stopPropagation();
+		}
+		function setPressEnterKey() {
+			$input.keypress(function(e) {
+				switch(e.which) {
+					case keys.ENTER:
+						e.preventDefault();
+						if(search.length < defaults.minChar) {
+							dataArr = [];
+						}
+						var index = parseInt($(selectorElement + '.selected').attr('item')) - 1;
+						var item = dataArr[index];
+						defaults.onPressEnterKey(item);
+						return false;
+					break;
+				}
 			});
 		}
 		/*
 		*	Set the click event and use the default function.
 		*	
 		*/
-		function setClick($element) {
-			bindOffClick($element);
-			var index = parseInt($element.attr('item')) - 1;
-			var item = dataArr[index];
-			$element.on('click', function() {
+		function setClick() {
+			var $element = $(selectorElement);
+			bindOffClick($element);	
+			$element.on('click', function(e) {
+				e.preventDefault();
+				var index = parseInt($(this).attr('item')) - 1;
+				var item = dataArr[index];
 				defaults.onClick(item);
+				resetDropDown();
+				return false;
 			});
 		}
 		/*
@@ -223,8 +234,22 @@ var LightAutocomplete = (function (main) {
 		*	NOTICE:
 		*	The first index is 1 and not 0.
 		*/
-		function getItem(index) {
-			return $(selectorContainer + '[item="' + index + '"]' );
+		function getElement(index) {
+			return $(selectorElement + '[item="' + index + '"]' );
+		}
+		/**
+		 * 
+		 */
+		function createContainer() {
+			$input.wrap('<div class="' + classContainer + '"></div>');
+		}
+		/**
+		 * 
+		 */
+		function resetDropDown() {
+			dataArr = [];
+			$(selectorList).parent().remove();
+			insertTemplate();
 		}
 		/*
 		*	Insert the list template in the DOM.
@@ -243,7 +268,8 @@ var LightAutocomplete = (function (main) {
 		*	Create template for the list.
 		*/
 		function createTemplateList() {
-			return '<div class="' + classList + '" style="display:none; position: relative; z-index: 1000;"><ul style="position: absolute; overflow-y: scroll; left: 0; max-height: ' + defaults.maxHeight + 'px;"></ul></div>'
+			// <div> style="display:none; position: relative; z-index: 1000; height: ' + (defaults.maxHeight + $input.outerHeight()) + 'px;"
+			return '<div class="' + classList + '" style="display:none;"><ul style="overflow-y: scroll; max-height: ' + defaults.maxHeight + 'px;"></ul></div>'
 		}
 		/*
 		*	Create template for each items in list.
@@ -251,7 +277,7 @@ var LightAutocomplete = (function (main) {
 		function createTempleteItem(item, index) {
 			var seleceted = '';
 			if(index == 1) seleceted = ' selected';
-			return  '<li><div item="' + index + '" class="' + classItem + ' ' + seleceted + '" style="max-height: ' + defaults.heightOfElement + 'px;">' + item.label + '</div></li>';
+			return  '<li><div item="' + index + '" class="' + classElement + ' ' + seleceted + '" style="max-height: ' + defaults.heightOfElement + 'px;">' + item.label + '</div></li>';
 		}
 		/*
 		*	Set off autocomplete of the browser.
@@ -263,14 +289,20 @@ var LightAutocomplete = (function (main) {
 		*	Bind events to the input element and the item in list
 		*	to be sure that they aren't events associeted.
 		*/
-		function bindOffKeyDown() {
-			$input.off('keydown');
-		}
 		function bindOffClick($element) {
 			$element.off('click');
 		}
+		function bindOffMouseover($element) {
+			$element.off('mouseover');
+		}
+		function bindOffKeyDown() {
+			$input.off('keydown');
+		}
 		function bindOffKeyup() {
 			$input.off('keyup');
+		}
+		function bindOffFocusOut(){
+			$input.parent().off('focusout');
 		}
 		/*
 		*	Function that check if a number is an Int.
