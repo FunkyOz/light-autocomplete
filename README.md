@@ -94,10 +94,6 @@ $('#light-autocomplete').lightAutocomplete(options);
 ## All additionals options, with default value.
 ```javascript
 var options: {
-  /*
-  * Is a variable to call errors.
-  */
-  devMode: true,
   /* 
   * The minimun number of character to search.
   */
@@ -119,7 +115,7 @@ var options: {
   },
   onClick: function(item) {},
   onPressEnterKey: function(item) {},
-  onClickOut: function(item) {}
+  onFocusOut: function(item) {}
 }
 
 $('#light-autocomplete').lightAutocomplete(options);
