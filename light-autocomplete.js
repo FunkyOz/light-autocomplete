@@ -30,20 +30,19 @@
 		that.search = '',
 		that.last = 0,
 		that.firstItem = 1,
-		that.stringErrors = 'DEV Console ------> ',
-		that.dataArr = [],
+		that.data = [],
 		that.defaults = {
-			minChar: 1,
+			minChars: 1,
 			heightOfElement: 50,
 			visibleElementInList: 5,
-			maxSize: 6,
+			minSize: 6,
 			onClick: function(item) {
 				that.setItem(item);
 			},
-			onPressEnterKey: function(item) {
+			onPressEnter: function(item) {
 				that.setItem(item);
 			},
-			onFocusOut: function(item) {
+			onPressTabEsc: function(item) {
 				that.setItem(item);
 			},
 		};
@@ -100,11 +99,13 @@
 						e.preventDefault();
 					case keys.TAB:
 						that.ifNotMatchData();
-						var item = that.dataArr[0];
-						that.defaults.onFocusOut(item);
+						var item = that.data[0];
+						that.defaults.onPressTabEsc(item);
 						that.resetDropDown();
 					break;
 				}
+
+				e.stopImmediatePropagation();
 			});
 		},
 		setKeyUp: function(){
@@ -115,9 +116,9 @@
 				}
 				that.showTemplate();
 				that.search = that.$input.val().toLowerCase();
-				if(that.search.length >= that.defaults.minChar){
+				if(that.search.length >= that.defaults.minChars){
 					that.defaults.sourceData(that.search, function(data) {
-						if(data.lenght > 0) that.dataArr = [];
+						if(data.lenght > 0) that.data = [];
 						that.createDropDown(data);
 					});
 				}
@@ -177,13 +178,13 @@
 			var that = this;
 			var index = 0;
 			data.forEach(function(element, i) {
-				if(that.defaults.maxSize !== false) {
-					if(index >= that.defaults.maxSize){
+				if(that.defaults.minSize !== false) {
+					if(index >= that.defaults.minSize){
 						return false;
 					}
 				}
 				if(element.label.toLowerCase().indexOf(that.search) > -1) {
-					that.dataArr[index] = element;
+					that.data[index] = element;
 					that.last = ++index;
 					$(that.selectors.list, that.selectors.container, that.$input.parent()).append(that.createTempleteItem(element, index));
 				}
@@ -193,17 +194,12 @@
 		},
 		setFocus: function() {
 			var that = this;
-			$(document).mouseup(function(e) {
-				var container = $(that.selectors.container);
-				if (!container.is(e.target) && container.has(e.target).length === 0)  {
-					if(that.$input.val() == '') {
-						that.dataArr = [];
-					}
-					var item = that.dataArr[0];
-					that.defaults.onFocusOut(item);
-					that.dataArr = [];
-					$(that.selectors.list, that.selectors.container).parent().remove();
-					that.insertTemplate();
+			$(document).on('click',function(e) {
+				var $container = $(that.selectors.container);
+				if (!$container.is(e.target) && !that.$input.is(e.target)) {
+					$(that.selectors.list ,$container).hide();
+				} else {
+					if(that.$input.is(e.target)) $(that.selectors.list ,$container).show();
 				}
 			});
 		},
@@ -219,12 +215,12 @@
 				switch(e.which) {
 					case keys.ENTER:
 						that.ifNotMatchData();
-						if(that.search.length < that.defaults.minChar) {
-							that.dataArr = [];
+						if(that.search.length < that.defaults.minChars) {
+							that.data = [];
 						}
 						var index = parseInt($(that.selectors.element + '.selected').attr('item')) - 1;
-						var item = that.dataArr[index];
-						that.defaults.onPressEnterKey(item);
+						var item = that.data[index];
+						that.defaults.onPressEnter(item);
 						that.resetDropDown();
 						e.preventDefault();
 					break;
@@ -237,14 +233,14 @@
 			$element.on('click.lightAutocomplete tap.lightAutocomplete', function() {
 				that.ifNotMatchData();
 				var index = parseInt($(this).attr('item')) - 1;
-				var item = that.dataArr[index];
+				var item = that.data[index];
 				that.defaults.onClick(item);
 				that.resetDropDown();
 			});
 		},
 		resetDropDown: function() {
 			var that = this;
-			that.dataArr = [];
+			that.data = [];
 			$(that.selectors.list, that.selectors.container).parent().remove();
 			that.insertTemplate();
 		},
@@ -255,10 +251,10 @@
 		ifNotMatchData: function() {
 			var that = this;
 			if(that.$input.val() == '') {
-				that.dataArr = [];
+				that.data = [];
 			}
 			if(!$(that.selectors.list + ' li', that.selectors.container).length) {
-				that.dataArr = [];
+				that.data = [];
 				that.$input.val('');
 			}
 		},
@@ -286,7 +282,7 @@
 			that.$input.attr('autocomplete', 'off');
 		}
 	}
-	$.fn.devLightAutocomplete = function (options, args) {
+	$.fn.lightAutocomplete = function (options, args) {
         var dataKey = 'lightAutocomplete';
         if (!arguments.length) {
             return this.first().data(dataKey);
@@ -307,7 +303,4 @@
             }
         });
     };
-    if (!$.fn.lightAutocomplete) {
-        $.fn.lightAutocomplete = $.fn.devLightAutocomplete;
-    }
 })(jQuery);
