@@ -42,9 +42,12 @@
 			onPressEnter: function(item) {
 				that.setItem(item);
 			},
-			onPressTabEsc: function(item) {
+			onPressTab: function(item) {
 				that.setItem(item);
 			},
+			onPressEsc: function(item) {
+				that.setItem(item);
+			}
 		};
 
 		that.init();
@@ -97,14 +100,16 @@
 				switch(e.keyCode) {
 					case keys.ESC:
 						e.preventDefault();
+						that.ifNotMatchData();
+						var item = that.data[0];
+						that.defaults.onPressEsc(item);
 					case keys.TAB:
 						that.ifNotMatchData();
 						var item = that.data[0];
-						that.defaults.onPressTabEsc(item);
-						that.resetDropDown();
+						that.defaults.onPressTab(item);
 					break;
 				}
-
+				that.resetDropDown();
 				e.stopImmediatePropagation();
 			});
 		},
