@@ -1,3 +1,4 @@
+# DOESN'T WORK!
 # LightAutocomplete.js
 A light and easy to use autocomplete front-end plugin written in jQuery.
 ## Installation.
