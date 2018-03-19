@@ -28,7 +28,7 @@
 		SHIFT: 16
 	};
 
-	var chace = [];
+	var cache = [];
 
 	function LightAutocomplete(input, options) {
 		this.options = options;
