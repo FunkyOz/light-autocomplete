@@ -57,19 +57,6 @@ var options: {
 
 $('#light-autocomplete').lightAutocomplete(options);
 ```
-### Detect click out of element.
-When the user clicks out of the list you have the possibility to controll the event.
-```javascript
-var options: {
-  ...
-  onClickOut: function(item) {
-    $('#light-autocomplete').val(item.label);
-  }
-  ...
-}
-
-$('#light-autocomplete').lightAutocomplete(options);
-```
 ## Set Data From Ajax Request.
 Variable `search` is the string to find in array. It will be updated every time you press a character.
 ```javascript
@@ -114,8 +101,9 @@ var options: {
     success(data);
   },
   onClick: function(item) {},
-  onPressEnterKey: function(item) {},
-  onFocusOut: function(item) {}
+  onPressEnter: function(item) {},
+  onPressTab: function(item) {},
+  onPressEsc: function(item) {}
 }
 
 $('#light-autocomplete').lightAutocomplete(options);
