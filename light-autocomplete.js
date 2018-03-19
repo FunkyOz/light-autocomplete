@@ -39,8 +39,8 @@
 			element: "light-autocomplete-element",
 			container: "light-autocomplete-container"
 		},
-		that.selectors ={
-			list: ".light-autocomplete-list ul",
+		that.selectors = {
+			list: "." + that.classes.list + " ul",
 			element: "." + that.classes.element,
 			container: "." + that.classes.container
 		},
@@ -75,7 +75,8 @@
 	LightAutocomplete.prototype = {
 		
 		init: function() {
-			var that = this;
+            var that = this;
+            that.$input.attr("autocomplete", "off");
 			that.defaults = $.extend({}, that.defaults, that.options);
 			that.defaults.maxHeight = that.defaults.heightOfElement * that.defaults.visibleElementInList;
 			if(typeof(that.$input.attr("id")) !== "undefined" && that.$input.attr("id") !== null) {
@@ -170,7 +171,7 @@
 				that.showTemplate();
 				that.search = that.$input.val().toLowerCase();
 				that.defaults.sourceData(that.search, function(data) {
-					that.cachedData(data);
+					that.createDropDown(data);
 				});
 			});
 		},
