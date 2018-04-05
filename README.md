@@ -66,7 +66,7 @@ var options: {
     id: 1
   },
   sourceData: "url-to-fetch-data",
-  onResponseAjax: function() {
+  onResponseAjax: function(response, data) {
 
   }
 }
