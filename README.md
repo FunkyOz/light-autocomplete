@@ -100,7 +100,12 @@ var options: {
   /*
   * Use this function if you want to manage response of ajax.
   */
-  onResponseAjax : function(response, data) {}
+  onResponseAjax : function(response, data) {},
+  /*
+  * If you want to send the input value to your server
+  * use a string that refer to name of variable.
+  */
+  sendValue: "nameOfVar",
   /*
   * Set on click of element.
   */
