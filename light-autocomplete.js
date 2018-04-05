@@ -221,6 +221,7 @@
 			data.forEach(function(element, i) {
 				if(that.defaults.minSize !== false && index >= that.defaults.minSize) return false;
 				if(element.label.toLowerCase().indexOf(that.search) > -1) {
+					if(typeof element.value === "undefined") element.value = element.label;
 					that.data[index] = element;
 					that.last = ++index;
 					$(that.selectors.list, that.selectors.container, that.$input.parent()).append(that.createTempleteItem(element, index));
