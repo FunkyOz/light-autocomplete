@@ -1,7 +1,7 @@
 # LightAutocomplete.js
 A light and easy to use autocomplete front-end plugin written in jQuery.
 ## Installation.
-Include the script `light-autocomplete.js` after the jquery plugin.
+Include the script `light-autocomplete.js` or `light-autocomplete.min.js` after the jquery plugin.
 ## Quick Start.
 Instance the `lightAutocomplete()` with options. The `sourceData()` callback is mandatory.
 ```javascript
@@ -14,8 +14,8 @@ var cities: [
 ];
 
 var options: {
-  sourceData: function(success) {
-    success(cities);
+  sourceData: function(search, onSuccess) {
+    onSuccess(cities);
   }
 }
 
@@ -33,8 +33,8 @@ var data: [
 ];
 
 var options: {
-  sourceData: function(success) {
-    success(data);
+  sourceData: function(search, onSuccess) {
+    onSuccess(data);
   },
   onClick: function(item) {
     $('#light-autocomplete').val(item.label);
@@ -61,18 +61,13 @@ $('#light-autocomplete').lightAutocomplete(options);
 Variable `search` is the string to find in array. It will be updated every time you press a character.
 ```javascript
 var options: {
-  sourceData: function(success, search) {
-    $.ajax({
-      url: 'url-to-fetch-data',
-      method: 'POST',
-      dataType: 'json',
-      data: {
-        stringToSearch: search
-      },
-      success: function(data) {
-        success(data);
-      }
-    });
+  httpMethod: "POST",
+  postData: {
+    id: 1
+  },
+  sourceData: "url-to-fetch-data",
+  onResponseAjax: function() {
+
   }
 }
 
@@ -97,13 +92,31 @@ var options: {
   * Max size to return in drop down.
   */
   maxSize: 6,
-  sourceData: function(success) {
-    success(data);
-  },
+  /*
+  * Could be a string if you want to use ajax
+  * or a function if you want to use a javascript object.
+  */
+  sourceData: |mixed|,
+  /*
+  * Use this function if you want to manage response of ajax.
+  */
+  onResponseAjax : function(response, data) {}
+  /*
+  * Set on click of element.
+  */
   onClick: function(item) {},
+  /*
+  * Set the behavios of ENTER key.
+  */
   onPressEnter: function(item) {},
+  /*
+  * Set the behavios of TAB key.
+  */
   onPressTab: function(item) {},
-  onPressEsc: function(item) {}
+  /*
+  * Set the behavios of ESC key.
+  */
+  onPressEsc: function(item) {},
 }
 
 $('#light-autocomplete').lightAutocomplete(options);

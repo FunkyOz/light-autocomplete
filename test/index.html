@@ -9,12 +9,20 @@
 		<div class="container">
 			<h1 class="main-title">LightAutocomplete.js</h1>
 			<form action="" method="POST">
-				<div class="col-md-offset-3 col-md-6">
+				<div class="col-md-6">
 					<div class="form-group">
 						<label for="light-autocomplete">
-							<strong>Type a text:</strong>
+							<strong>Source data with AJAX:</strong>
 						</label>
-						<input type="text" class="form-control" id="light-autocomplete" autocomplete="off">
+						<input type="text" class="form-control" id="ajax-light-autocomplete" autocomplete="off">
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="form-group">
+						<label for="light-autocomplete">
+							<strong>Source data with JSON:</strong>
+						</label>
+						<input type="text" class="form-control" id="json-light-autocomplete" autocomplete="off">
 					</div>
 				</div>
 			</form>
@@ -23,28 +31,24 @@
 		<script type="text/javascript" src="../light-autocomplete.js"></script>
 		<script type="text/javascript" src="data.js"></script>
 		<script type="text/javascript">
-			var options = {
-		    sourceData: function(search, success) {
-		        $.ajax({
-		            url: "https://restcountries.eu/rest/v2/all",
-		            method: "GET",
-		            dataType: "json",
-		            success: function(response) {
-		                var data = [];
-		                response.forEach(function(element) {
-		                    data.push({
-		                        label: element.name, value: element.name
-		                    });
-		                });
-		                success(data);
-		            }
-		        });
-		    },
-		    minChars: 1,
-		    minSize: false
-		};
 
-		$("#light-autocomplete").lightAutocomplete(options);
+			$("#ajax-light-autocomplete").lightAutocomplete({
+				onResponseAjax: function(response, data) {
+					response.forEach(function(element) {
+						data.push({
+							label: element.nativeName, value: element.name
+						});
+					});
+				},
+			    sourceData: "https://restcountries.eu/rest/v2/all",
+			});
+
+			$("#json-light-autocomplete").lightAutocomplete({
+				sourceData: function(search, success) {
+					success(dataJson);
+				}
+			});
+			
 		</script>
 	</body>
 </html>

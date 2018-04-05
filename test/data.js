@@ -1,4 +1,4 @@
-var data = [
+var dataJson = [
 	{ label: 'Torino', value: 'Torino' },
 	{ label: 'Milano', value: 'Milano' },
 	{ label: 'Roma', value: 'Roma' },

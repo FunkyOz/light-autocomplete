@@ -28,8 +28,6 @@
 		SHIFT: 16
 	};
 
-	var cache = [];
-
 	function LightAutocomplete(input, options) {
 		this.options = options;
 		this.$input = $(input);
@@ -44,12 +42,15 @@
 			element: "." + that.classes.element,
 			container: "." + that.classes.container
 		},
+		that.cache = [],
 		that.id = "",
 		that.search = "",
 		that.last = 0,
 		that.firstItem = 1,
 		that.data = [],
 		that.defaults = {
+			httpMethod: "GET",
+			postData: {},
 			minChars: 1,
 			heightOfElement: 50,
 			visibleElementInList: 5,
@@ -168,25 +169,65 @@
 						that.firstItem = 1;
 					break;
 				}
-				that.showTemplate();
 				that.search = that.$input.val().toLowerCase();
-				that.defaults.sourceData(that.search, function(data) {
-					that.createDropDown(data);
-				});
+				if(that.search.length >= that.defaults.minChars) {
+					that.showTemplate();
+					if(typeof that.defaults.sourceData === "function") {
+						that.defaults.sourceData(that.search, function(data) {
+							that.createDropDown(data);
+						});
+					}else if(typeof that.defaults.sourceData === "string") {
+						that.doAjax(that.defaults.sourceData);
+					}
+				}
 			});
 		},
 
-		cachedData: function(data) {
+		doAjax: function(url) {
 			var that = this;
-			if(that.search.length == that.defaults.minChars) {
-				if(data.lenght > 0) that.data = [];
-				that.cache = data;
-				that.createDropDown(data);
-			}else if(that.search.length > that.defaults.minChars) {
+			if(that.cache.length > 0) {
 				that.createDropDown(that.cache);
-			}else if(that.search.length < that.defaults.minChars) {
-				that.cache = [];
+			}else {
+				$.ajax({
+	            	url: url,
+	            	dataType: "json",
+		            method: that.defaults.httpMethod,
+		            data: that.defaults.postData,
+		            success: function(response) {
+		            	var data = [];
+		            	if(typeof that.defaults.onResponseAjax !== "undefined") {
+		            		that.defaults.onResponseAjax(response, data);
+		            	}else {
+			                response.forEach(function(element) {
+			                    data.push({
+			                        label: element.label,
+			                        value: element.value
+			                    });
+			                });
+		            	}
+		                that.cache = data;
+		                that.createDropDown(data);
+		            },
+		            error: function(jqXHR, textStatus, errorThrown) {
+		            	console.error(jqXHR);
+		            }
+		        });
 			}
+		},
+
+		createDropDown: function(data) {
+			var that = this;
+			var index = 0;
+			data.forEach(function(element, i) {
+				if(that.defaults.minSize !== false && index >= that.defaults.minSize) return false;
+				if(element.label.toLowerCase().indexOf(that.search) > -1) {
+					that.data[index] = element;
+					that.last = ++index;
+					$(that.selectors.list, that.selectors.container, that.$input.parent()).append(that.createTempleteItem(element, index));
+				}
+			});
+			that.setClick();
+			that.setElementMouseover();
 		},
 
 		moveDown: function() {
@@ -221,23 +262,6 @@
 				}, 50);
 				that.firstItem--;
 			}
-		},
-
-		createDropDown: function(data) {
-			var that = this;
-			var index = 0;
-			data.forEach(function(element, i) {
-				if(that.defaults.minSize !== false && index >= that.defaults.minSize) {
-					return false;
-				}
-				if(element.label.toLowerCase().indexOf(that.search) > -1) {
-					that.data[index] = element;
-					that.last = ++index;
-					$(that.selectors.list, that.selectors.container, that.$input.parent()).append(that.createTempleteItem(element, index));
-				}
-			});
-			that.setClick();
-			that.setElementMouseover();
 		},
 
 		setFocus: function() {
