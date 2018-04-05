@@ -49,6 +49,7 @@
 		that.firstItem = 1,
 		that.data = [],
 		that.defaults = {
+            sendValue: false,
 			httpMethod: "GET",
 			postData: {},
 			minChars: 1,
@@ -177,42 +178,49 @@
 							that.createDropDown(data);
 						});
 					}else if(typeof that.defaults.sourceData === "string") {
-						that.doAjax(that.defaults.sourceData);
+						if(that.cache.length > 0) {
+							that.createDropDown(that.cache);
+						}else {
+							that.doAjax(that.defaults.sourceData);
+						}
 					}
+				}else {
+					that.cache = [];
 				}
 			});
 		},
 
 		doAjax: function(url) {
-			var that = this;
-			if(that.cache.length > 0) {
-				that.createDropDown(that.cache);
-			}else {
-				$.ajax({
-	            	url: url,
-	            	dataType: "json",
-		            method: that.defaults.httpMethod,
-		            data: that.defaults.postData,
-		            success: function(response) {
-		            	var data = [];
-		            	if(typeof that.defaults.onResponseAjax !== "undefined") {
-		            		that.defaults.onResponseAjax(response, data);
-		            	}else {
-			                response.forEach(function(element) {
-			                    data.push({
-			                        label: element.label,
-			                        value: element.value
-			                    });
-			                });
-		            	}
-		                that.cache = data;
-		                that.createDropDown(data);
-		            },
-		            error: function(jqXHR, textStatus, errorThrown) {
-		            	console.error(jqXHR);
-		            }
+            var that = this;
+            if(that.defaults.sendValue !== false){ 
+                var obj = [];
+                obj[that.defaults.sendValue] = that.$input.val();
+                that.defaults.postData = $.extend({}, that.defaults.postData, obj);
+            }
+			$.ajax({
+            	url: url,
+            	dataType: "json",
+	            method: that.defaults.httpMethod,
+	            data: that.defaults.postData,
+	            success: function(response) {
+	            	var data = [];
+	            	if(typeof that.defaults.onResponseAjax !== "undefined") {
+	            		that.defaults.onResponseAjax(response, data);
+	            	}else {
+		                response.forEach(function(element) {
+		                    data.push({
+		                        label: element.label,
+		                        value: element.value
+		                    });
+		                });
+	            	}
+	                that.cache = data;
+	                that.createDropDown(that.cache);
+	            },
+	            error: function(jqXHR, textStatus, errorThrown) {
+	            	console.error(jqXHR);
+	            }
 		        });
-			}
 		},
 
 		createDropDown: function(data) {
