@@ -106,15 +106,15 @@ var options: {
   */
   onClick: function(item) {},
   /*
-  * Set the behavios of ENTER key.
+  * Set the behavior of ENTER key.
   */
   onPressEnter: function(item) {},
   /*
-  * Set the behavios of TAB key.
+  * Set the behavior of TAB key.
   */
   onPressTab: function(item) {},
   /*
-  * Set the behavios of ESC key.
+  * Set the behavior of ESC key.
   */
   onPressEsc: function(item) {},
 }
