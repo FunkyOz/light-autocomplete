@@ -11,10 +11,9 @@
  *
  * @preserve
  */
+"use strict";
 
-(function ($) {
-
-	"use strict";
+;(function ($) {
 
 	var keys = {
 		ENTER: 13,
@@ -374,5 +373,4 @@
             }
         });
     };
-
 })(jQuery);
